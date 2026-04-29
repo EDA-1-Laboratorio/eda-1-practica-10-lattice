@@ -1,5 +1,6 @@
 import time
 from greedy_cambio import cambio_greedy
+from greedy_cambio import cambio_optimo_dp
 
 # -------------------------------
 # Medición de tiempo
@@ -17,7 +18,7 @@ def medir_tiempo(func, *args, repeticiones=5):
 
 
 # -------------------------------
-# Experimento (test de doblamiento)
+# Experimento GREEDY
 # -------------------------------
 def experimento_greedy():
     monedas = [1, 5, 10, 25]
@@ -25,10 +26,29 @@ def experimento_greedy():
 
     resultados = []
 
-    print("\nEjecutando experimento...\n")
+    print("\n=== GREEDY ===\n")
 
     for n in tamaños:
         t = medir_tiempo(cambio_greedy, n, monedas)
+        resultados.append((n, t))
+        print(f"n={n} -> tiempo={t:.8f} s")
+
+    return resultados
+
+
+# -------------------------------
+# Experimento PROGRAMACIÓN DINÁMICA
+# -------------------------------
+def experimento_dp():
+    monedas = [1, 5, 10, 25]
+    tamaños = [50, 100, 200, 400]  # más pequeños porque es más lento
+
+    resultados = []
+
+    print("\n=== PROGRAMACIÓN DINÁMICA ===\n")
+
+    for n in tamaños:
+        t = medir_tiempo(cambio_optimo_dp, n, monedas)
         resultados.append((n, t))
         print(f"n={n} -> tiempo={t:.8f} s")
 
@@ -47,7 +67,7 @@ def calcular_ratio(resultados):
 
         r = t2 / t1 if t1 > 0 else 0
 
-        print(f"r({n1}) = T({n2}) / T({n1}) = {r:.2f}")
+        print(f"r({n1}) = {r:.2f}")
 
 
 # -------------------------------
@@ -65,6 +85,13 @@ def mostrar_tabla(resultados):
 # MAIN
 # -------------------------------
 if __name__ == "__main__":
-    resultados = experimento_greedy()
-    mostrar_tabla(resultados)
-    calcular_ratio(resultados)
+
+    # GREEDY
+    resultados_greedy = experimento_greedy()
+    mostrar_tabla(resultados_greedy)
+    calcular_ratio(resultados_greedy)
+
+    # DP
+    resultados_dp = experimento_dp()
+    mostrar_tabla(resultados_dp)
+    calcular_ratio(resultados_dp)
