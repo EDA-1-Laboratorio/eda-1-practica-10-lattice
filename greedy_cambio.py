@@ -26,32 +26,26 @@ def cambio_greedy(monto: int, monedas: list) -> tuple | None:
         None                        si el monto no se puede completar.
     """
 
-    # Validaciones básicas
     if monto < 0 or not isinstance(monedas, list) or len(monedas) == 0:
         return None
     if any(type(m) != int or m <= 0 for m in monedas):
         return None
 
-    # 1. Ordenar monedas de mayor a menor
     monedas = sorted(monedas, reverse=True)
 
     usadas = []
     restante = monto
 
-    # 2. Tomar tantas monedas como quepan
     for moneda in monedas:
         cantidad = restante // moneda
         if cantidad > 0:
             usadas.extend([moneda] * cantidad)
             restante = restante % moneda
 
-    # 3. Verificar si se logró el monto exacto
     if restante == 0:
         return usadas, sum(usadas)
 
-    # 4. Si no se pudo completar el monto
     return None
-
 # ---------------------------------------------------------------------------
 # Problema B – Solución óptima por programación dinámica
 # ---------------------------------------------------------------------------
