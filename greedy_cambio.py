@@ -70,29 +70,34 @@ def cambio_optimo_dp(monto: int, monedas: list) -> tuple | None:
     if any(type(m) != int or m <= 0 for m in monedas):
         return None
 
+    # Inicialización
     dp = [float('inf')] * (monto + 1)
-    padre = [-1] * (monto + 1)
-
     dp[0] = 0
 
-    for i in range(1, monto + 1):
-        for m in monedas:
-            if m <= i and dp[i - m] + 1 < dp[i]:
-                dp[i] = dp[i - m] + 1
-                padre[i] = m
+    # Para reconstruir la solución
+    prev = [-1] * (monto + 1)
 
+    # Llenado de la tabla
+    for i in range(1, monto + 1):
+        for moneda in monedas:
+            if i - moneda >= 0 and dp[i - moneda] + 1 < dp[i]:
+                dp[i] = dp[i - moneda] + 1
+                prev[i] = moneda
+
+    # Si no hay solución
     if dp[monto] == float('inf'):
         return None
 
-    usadas = []
+    # Reconstrucción de la solución
+    resultado = []
     actual = monto
 
     while actual > 0:
-        moneda = padre[actual]
-        usadas.append(moneda)
+        moneda = prev[actual]
+        resultado.append(moneda)
         actual -= moneda
 
-    return usadas, sum(usadas)
+    return resultado, sum(resultado)
 
 # ---------------------------------------------------------------------------
 # Problema C – Comparación: contraejemplos
