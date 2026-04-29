@@ -24,24 +24,39 @@ def cambio_greedy(monto: int, monedas: list) -> tuple | None:
     Retorna:
         (usadas: list, total: int)  si hay solución exacta.
         None                        si el monto no se puede completar.
-
-    Pistas:
-        sorted(monedas, reverse=True) ordena de mayor a menor.
-        cantidad = restante // moneda  (cuántas caben)
-        restante = restante % moneda   (lo que sobra)
     """
-    # TODO: 1. Ordena las monedas de mayor a menor.
-    # TODO: 2. Para cada denominación, toma tantas monedas como quepan.
-    # TODO: 3. Si el residuo final es 0, retorna (lista_de_monedas_usadas, total).
-    # TODO: 4. Si queda residuo, retorna None.
-    pass
 
+    # Validaciones básicas
+    if monto < 0 or not isinstance(monedas, list) or len(monedas) == 0:
+        return None
+    if any(type(m) != int or m <= 0 for m in monedas):
+        return None
+
+    # 1. Ordenar monedas de mayor a menor
+    monedas = sorted(monedas, reverse=True)
+
+    usadas = []
+    restante = monto
+
+    # 2. Tomar tantas monedas como quepan
+    for moneda in monedas:
+        cantidad = restante // moneda
+        if cantidad > 0:
+            usadas.extend([moneda] * cantidad)
+            restante = restante % moneda
+
+    # 3. Verificar si se logró el monto exacto
+    if restante == 0:
+        return usadas, sum(usadas)
+
+    # 4. Si no se pudo completar el monto
+    return None
 
 # ---------------------------------------------------------------------------
 # Problema B – Solución óptima por programación dinámica
 # ---------------------------------------------------------------------------
-
 def cambio_optimo_dp(monto: int, monedas: list) -> tuple | None:
+
     """
     Resuelve el problema de cambio de manera óptima usando
     programación dinámica (número mínimo de monedas).
@@ -56,17 +71,38 @@ def cambio_optimo_dp(monto: int, monedas: list) -> tuple | None:
         Transición: dp[i] = min(dp[i], dp[i - m] + 1) para cada moneda m <= i.
         Guarda padre[i] = m que produjo dp[i] para reconstruir la solución.
     """
-    # TODO: crea la tabla dp y la tabla padre con longitud monto + 1.
-    # TODO: llena la tabla recorriendo cada monto parcial de 1 a monto.
-    # TODO: si dp[monto] es inf, retorna None.
-    # TODO: reconstruye la lista de monedas usando padre[].
-    pass
+    if monto < 0 or not monedas:
+        return None
+    if any(type(m) != int or m <= 0 for m in monedas):
+        return None
 
+    dp = [float('inf')] * (monto + 1)
+    padre = [-1] * (monto + 1)
+
+    dp[0] = 0
+
+    for i in range(1, monto + 1):
+        for m in monedas:
+            if m <= i and dp[i - m] + 1 < dp[i]:
+                dp[i] = dp[i - m] + 1
+                padre[i] = m
+
+    if dp[monto] == float('inf'):
+        return None
+
+    usadas = []
+    actual = monto
+
+    while actual > 0:
+        moneda = padre[actual]
+        usadas.append(moneda)
+        actual -= moneda
+
+    return usadas, sum(usadas)
 
 # ---------------------------------------------------------------------------
 # Problema C – Comparación: contraejemplos
 # ---------------------------------------------------------------------------
-
 def comparar_estrategias(monto_max: int, monedas: list) -> dict:
     """
     Para cada monto de 1 a monto_max, compara greedy vs DP.
@@ -77,10 +113,24 @@ def comparar_estrategias(monto_max: int, monedas: list) -> dict:
         'montos_greedy_suboptimo' : lista de (monto, total_greedy, total_dp)
                                     donde greedy usa más monedas que DP.
     """
-    # TODO: itera los montos, llama a cambio_greedy y cambio_optimo_dp.
-    # TODO: clasifica cada caso y acumula en las listas correspondientes.
-    pass
+    montos_greedy_falla = []
+    montos_greedy_suboptimo = []
 
+    for m in range(1, monto_max + 1):
+        g = cambio_greedy(m, monedas)
+        d = cambio_optimo_dp(m, monedas)
+
+        if g is None and d is not None:
+            montos_greedy_falla.append(m)
+
+        elif g is not None and d is not None:
+            if len(g[0]) > len(d[0]):
+                montos_greedy_suboptimo.append((m, len(g[0]), len(d[0])))
+
+    return {
+        "montos_greedy_falla": montos_greedy_falla,
+        "montos_greedy_suboptimo": montos_greedy_suboptimo
+    }
 
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
